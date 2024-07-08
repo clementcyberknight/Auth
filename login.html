@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Signup</title>
+    <title>Login</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
       rel="stylesheet"
@@ -60,12 +60,8 @@
         margin: 0 auto;
       }
 
-      input[type="text"],
       input[type="email"],
-      input[type="password"],
-      input[type="date"],
-      input[type="number"],
-      select {
+      input[type="password"] {
         width: 100%;
         padding: 12px;
         margin: 12px 0;
@@ -113,23 +109,6 @@
         text-decoration: underline;
       }
 
-      .success-message {
-        background-color: #4caf50;
-        color: white;
-        padding: 10px;
-        text-align: center;
-        font-size: 16px;
-        border-radius: 8px;
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 80%;
-        max-width: 400px;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
       .alert {
         padding: 15px;
         margin: 15px 0;
@@ -167,6 +146,12 @@
         }
       }
 
+      .google-fab img {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+      }
+
       .google-button {
         background-color: #ffffff;
         border: 1px solid #dddddd;
@@ -178,22 +163,14 @@
         align-items: center;
         font-size: 14px;
         transition: background-color 0.3s ease;
+        width: 100%;
+        justify-content: center;
       }
 
       .google-button:hover {
         background-color: #f0f0f0;
       }
 
-      .google-button .google-fab {
-        display: flex;
-        align-items: center;
-        margin-right: 12px;
-      }
-
-      .google-button .google-fab img {
-        width: 20px;
-        height: 20px;
-      }
       ::-webkit-scrollbar {
         width: 12px;
       }
@@ -213,70 +190,57 @@
       }
     </style>
   </head>
-
   <body>
     <header>
       <div class="logo">
-        <img src="" alt="logo" />
+        <img src="images/MedLinx.png" alt="logo" />
       </div>
       <a href="index.html" class="home-icon">
         <img src="icon/home.png" alt="Home" />
       </a>
     </header>
     <div class="form_container" id="form_container">
-      <form id="signup_form">
+      <form id="login_form">
         <div id="error_alert" class="alert hidden">Error message here.</div>
         <div class="container">
-          <label for="signup_fullname"><b>Name</b></label>
-          <input
-            type="text"
-            placeholder="Name"
-            name="fullname"
-            id="signup_fullname"
-          />
-
-          <label for="signup_email"><b>Email</b></label>
+          <label for="login_email"><b>Email</b></label>
           <input
             type="email"
             placeholder="Enter Email"
             name="email"
-            id="signup_email"
+            id="login_email"
           />
 
-          <label for="signup_password"><b>Password</b></label>
+          <label for="login_password"><b>Password</b></label>
           <input
             type="password"
             placeholder="Enter Password"
             name="password"
-            id="signup_password"
+            id="login_password"
           />
 
-          <button type="submit">Signup</button>
+          <button type="submit">Login</button>
           <p class="switch-form">
-            Already registered? <a href="/login.html">Login</a>
+            Don't have an account? <a href="/signup.html">Sign up</a>
           </p>
         </div>
-
         <div class="input-auth">
-          <button id="google-signin" class="google-button">
+          <button id="google-login" class="google-button">
             <i class="google-fab">
-              <img src="icon/google.png" alt="google icon" /> </i
-            >signup with Google
+              <img src="icon/google.png" alt="google icon" />
+            </i>
+            Login with Google
           </button>
         </div>
       </form>
     </div>
     <div class="spinner" id="spinner"></div>
+
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
-        getFirestore,
-        doc,
-        setDoc,
-      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-      import {
         getAuth,
-        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
         signInWithPopup,
         GoogleAuthProvider,
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -291,99 +255,65 @@
       };
 
       const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
 
-      const google_login = document.getElementById("google-signin");
+      const google_login = document.getElementById("google-login");
 
-      google_login.addEventListener("click", async function () {
-        try {
-          const result = await signInWithPopup(auth, provider);
-          const user = result.user;
-          const displayName = user.displayName;
-
-          var ref = doc(db, "UserAuthList", user.uid);
-          await setDoc(ref, {
-            fullname: displayName,
-            email: user.email,
-          });
-
-          console.log("done");
-          window.location.href = "login.htlm";
-        } catch (error) {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          displayAlert(`Login failed: ${errorMessage}`);
-        }
-      });
-
-      let signup_email = document.getElementById("signup_email");
-      let signup_password = document.getElementById("signup_password");
-      let signup_fullname = document.getElementById("signup_fullname");
-      let signup_form = document.getElementById("signup_form");
-
-      let RegisterUser = (evt) => {
-        evt.preventDefault();
-        spinner.style.display = "block";
-
-        createUserWithEmailAndPassword(
-          auth,
-          signup_email.value,
-          signup_password.value
-        )
-          .then(async (credentials) => {
-            var ref = doc(db, "UserAuthList", credentials.user.uid);
-            await setDoc(ref, {
-              fullname: signup_fullname.value,
-            });
-
-            sessionStorage.setItem("userID", credentials.user.uid);
-            sessionStorage.setItem("userFullname", signup_fullname.value);
-
-            const messageDiv = document.createElement("div");
-            messageDiv.className = "success-message";
-            messageDiv.textContent = "User signed up successfully!";
-            console.log("userID:", sessionStorage.getItem("userID"));
-            console.log(
-              "userFullname:",
-              sessionStorage.getItem("userFullname")
-            );
-
-            document.body.appendChild(messageDiv);
-            setTimeout(() => document.body.removeChild(messageDiv), 3000);
-            window.location.href = "login.html";
-            document.getElementById("signup_fullname").value = "";
-            document.getElementById("signup_email").value = "";
-            document.getElementById("signup_password").value = "";
-            spinner.style.display = "none";
+      google_login.addEventListener("click", function () {
+        signInWithPopup(auth, provider)
+          .then((result) => {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const user = result.user;
+            console.log("Google login successful");
+            window.location.href = "home.html";
           })
           .catch((error) => {
-            if (
-              error.code === "auth/email-already-in-use" ||
-              error.code === "auth/fullname-already-in-use"
-            ) {
-              displayAlert("User already exist.");
-              spinner.style.display = "none";
-            } else {
-              displayAlert("Login failed: " + error.message);
-              spinner.style.display = "none";
-            }
-            console.log(error.code, error.message);
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            displayAlert(`Login failed: ${errorMessage}`);
           });
-        function displayAlert(message) {
-          const alertBox = document.getElementById("error_alert");
-          alertBox.textContent = message;
-          alertBox.classList.remove("hidden");
+      });
 
-          // Optionally hide the alert after some time
-          setTimeout(() => {
-            alertBox.classList.add("hidden");
-          }, 5000);
-        }
+      let login_email = document.getElementById("login_email");
+      let login_password = document.getElementById("login_password");
+      let login_form = document.getElementById("login_form");
+
+      let LoginUser = (evt) => {
+        evt.preventDefault();
+        document.getElementById("spinner").style.display = "block";
+
+        signInWithEmailAndPassword(
+          auth,
+          login_email.value,
+          login_password.value
+        )
+          .then((userCredential) => {
+            const user = userCredential.user;
+            console.log("User logged in:", user);
+            document.getElementById("spinner").style.display = "none";
+            window.location.href = "home.html";
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            displayAlert(`Login failed: ${errorMessage}`);
+            document.getElementById("spinner").style.display = "none";
+            console.log(errorCode, errorMessage);
+          });
       };
 
-      signup_form.addEventListener("submit", RegisterUser);
+      login_form.addEventListener("submit", LoginUser);
+
+      function displayAlert(message) {
+        const alertBox = document.getElementById("error_alert");
+        alertBox.textContent = message;
+        alertBox.classList.remove("hidden");
+
+        setTimeout(() => {
+          alertBox.classList.add("hidden");
+        }, 5000);
+      }
     </script>
   </body>
 </html>
