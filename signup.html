@@ -314,7 +314,8 @@
         } catch (error) {
           const errorCode = error.code;
           const errorMessage = error.message;
-          displayAlert(`Login failed: ${errorMessage}`);
+          console.log(errorMessage);
+          console.log(errorCode);
         }
       });
 
