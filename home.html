@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome</title>
+    <style>
+      h2 {
+        font-family: Georgia, "Times New Roman", Times, serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="text-align: center; margin-top: 100px">
+      <h2 id="welcome-message"></h2>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const username = sessionStorage.getItem("username");
+        const email = sessionStorage.getItem("email");
+
+        // Display welcome message
+        const welcomeMessage = document.getElementById("welcome-message");
+        if (username && email) {
+          welcomeMessage.textContent = `Hi ${username}, you are welcome.`;
+        } else {
+          welcomeMessage.textContent = "Welcome!";
+        }
+      });
+    </script>
+  </body>
+</html>

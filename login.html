@@ -193,7 +193,7 @@
   <body>
     <header>
       <div class="logo">
-        <img src="images/MedLinx.png" alt="logo" />
+        <img src="" alt="logo" />
       </div>
       <a href="index.html" class="home-icon">
         <img src="icon/home.png" alt="Home" />
@@ -239,6 +239,11 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
+        getFirestore,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import {
         getAuth,
         signInWithEmailAndPassword,
         signInWithPopup,
@@ -256,6 +261,7 @@
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+      const db = getFirestore(app);
       const provider = new GoogleAuthProvider();
 
       const google_login = document.getElementById("google-login");
@@ -265,6 +271,10 @@
           .then((result) => {
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const user = result.user;
+            console.log(user);
+            sessionStorage.setItem("username", user.displayName);
+            sessionStorage.setItem("email", user.email);
+
             console.log("Google login successful");
             window.location.href = "home.html";
           })
@@ -288,11 +298,23 @@
           login_email.value,
           login_password.value
         )
-          .then((userCredential) => {
+          .then(async (userCredential) => {
             const user = userCredential.user;
-            console.log("User logged in:", user);
-            document.getElementById("spinner").style.display = "none";
-            window.location.href = "home.html";
+            const userRef = doc(db, "UserAuthList", user.uid);
+            const docSnap = await getDoc(userRef);
+            if (docSnap.exists()) {
+              const fullname = docSnap.data().fullname;
+              sessionStorage.setItem("email", login_email.value);
+              sessionStorage.setItem("username", fullname);
+
+              console.log("User logged in:", user);
+              document.getElementById("spinner").style.display = "none";
+              window.location.href = "home.html";
+            } else {
+              console.log("User data not found in database");
+              displayAlert("User data not found. Please signup.");
+              document.getElementById("spinner").style.display = "none";
+            }
           })
           .catch((error) => {
             const errorCode = error.code;
